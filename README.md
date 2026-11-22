@@ -18,7 +18,7 @@ Radial menus: touch to open, slide to highlight, release to activate. Configurab
 - Reuse *protocol knowledge* from [ddeverill/SteamlessController](https://github.com/ddeverill/SteamlessController) rather than copying its complete virtual-Xbox driver.
 - Valve vendor ID `0x28DE`; wired controller PID `0x1302`; BLE PID `0x1303`; wireless puck PID `0x1304`. HID vendor usage page `0xFF00`. Input report IDs `0x42` (USB) and `0x45` (BLE), subject to hardware verification.
 - Raw HID ownership may conflict with Steam Input. The integration must explicitly choose Steam Input handoff or direct HID ownership; **never silently disable lizard mode or send firmware-changing commands**.
-- A native Windows HID reader/bridge may be needed. Minecraft Fabric cannot read vendor HID reports on its own. The protocol and trackpad fields should be validated against actual controller reports before implementing the bridge.
+- Prefer extending Controlify's existing SDL3 controller backend and input pipeline; use a separate HID reader only if SDL3 cannot expose the required touchpad data. The protocol and trackpad fields should be validated against actual controller reports before implementing the bridge.
 - Controlify should remain responsible for ordinary controller buttons and sticks. Our mod should own only the specialized trackpad UI, avoiding duplicate gamepad events.
 
 ## Milestones
@@ -41,3 +41,11 @@ The Java initializer is only a **context detection scaffold**. There is no nativ
 - [Controlify](https://github.com/isXander/Controlify) — separate controller mod; no bundled source.
 
 No upstream source has been copied into this repository. MIT license applies to this project's original code; preserve attribution if upstream source is later reused.
+
+## Controlify-first integration decision (2026-11-22)
+
+This is a **Controlify extension**, not a parallel controller framework. Controlify already uses SDL3, has vendor-specific touchpad support on some controllers, supports radial menus, and implements GUI cursor navigation. The first implementation task is to identify how its SDL3 driver exposes the newer Steam Controller's trackpads, then register the missing inputs through Controlify's controller input pipeline. Do not reimplement Controlify's radial UI, inventory cursor, button mapping or configuration screens unless a specific gap is demonstrated.
+
+Desired defaults: gameplay left/right radial menus; GUI left scroll and right mouse. Provide minimal per-pad mode and sensitivity options, using Controlify configuration where possible. SteamlessController HID parsing is a fallback/reference only, not the primary architecture.
+
+**Current Java initializer is a temporary diagnostic scaffold**, not a Controlify integration. The repository currently has no Controlify dependency or verified controller driver implementation.
