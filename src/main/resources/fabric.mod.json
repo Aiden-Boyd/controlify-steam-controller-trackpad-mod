@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "steamtrackpads",
+  "version": "${version}",
+  "name": "Steam Controller Trackpads for Controlify",
+  "description": "Experimental context-sensitive Steam Controller trackpad integration.",
+  "authors": ["Community project"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": { "client": ["dev.steampads.SteamTrackpadsClient"] },
+  "depends": { "fabricloader": ">=0.20.1", "minecraft": "~26.3", "java": ">=25" },
+  "suggests": { "controlify": "*" }
+}
