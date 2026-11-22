@@ -3,11 +3,25 @@
   "id": "steamtrackpads",
   "version": "${version}",
   "name": "Steam Controller Trackpads for Controlify",
-  "description": "Experimental context-sensitive Steam Controller trackpad integration.",
-  "authors": ["Community project"],
+  "description": "Dual trackpad controls for the newer Steam Controller through Controlify.",
+  "authors": [
+    "Community project"
+  ],
   "license": "MIT",
   "environment": "client",
-  "entrypoints": { "client": ["dev.steampads.SteamTrackpadsClient"] },
-  "depends": { "fabricloader": ">=0.20.1", "minecraft": "~26.3", "java": ">=25" },
-  "suggests": { "controlify": "*" }
+  "entrypoints": {
+    "client": [
+      "dev.steampads.SteamTrackpadsClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": ">=0.161.0",
+    "controlify": "3.5.3+mc26.3"
+  },
+  "mixins": [
+    "steamtrackpads.mixins.json"
+  ]
 }

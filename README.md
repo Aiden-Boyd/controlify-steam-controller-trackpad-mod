@@ -1,51 +1,24 @@
-# Steam Controller Trackpads for Controlify — Minecraft 26.3
+# Steam Controller Trackpads for Controlify
 
-**Early development / not a functional controller mod yet.**
-
-This project is separate from the old crafting-lce-mod repository. It targets the **newer (2026) Steam Controller**, Minecraft Fabric 26.3 and coexistence with Controlify.
-
-## Required control behavior
+A client-side Fabric add-on for Minecraft Java 26.3 and Controlify 3.5.3+mc26.3. It uses the two touchpads exposed by Controlify's SDL3 driver for the 2026 Steam Controller.
 
 | Context | Left trackpad | Right trackpad |
-|---|---|---|
-| Gameplay | Nine-slot hotbar radial menu | Customizable action radial menu |
-| Inventory, crafting, chat, pause, settings, containers | Scroll wheel | Mousepad/cursor |
+| --- | --- | --- |
+| Gameplay | Nine-slot hotbar radial menu | Configurable Controlify action radial menu |
+| Inventory, crafting, and other cursor-enabled screens | Swipe vertically to scroll | Slide to move the Controlify cursor |
 
-Radial menus: touch to open, slide to highlight, release to activate. Configurable deadzone, touch/press semantics and bindings.
+Touch a pad to open its radial menu, slide toward a slot, and lift your finger to select it. Move back to the center before lifting to cancel. Controlify's normal virtual-mouse bindings handle clicks and dragging. Configure the action wheel, mouse sensitivity, and button activation threshold in Controlify.
 
-## Hardware approach
+## Setup
 
-- Reuse *protocol knowledge* from [ddeverill/SteamlessController](https://github.com/ddeverill/SteamlessController) rather than copying its complete virtual-Xbox driver.
-- Valve vendor ID `0x28DE`; wired controller PID `0x1302`; BLE PID `0x1303`; wireless puck PID `0x1304`. HID vendor usage page `0xFF00`. Input report IDs `0x42` (USB) and `0x45` (BLE), subject to hardware verification.
-- Raw HID ownership may conflict with Steam Input. The integration must explicitly choose Steam Input handoff or direct HID ownership; **never silently disable lizard mode or send firmware-changing commands**.
-- Prefer extending Controlify's existing SDL3 controller backend and input pipeline; use a separate HID reader only if SDL3 cannot expose the required touchpad data. The protocol and trackpad fields should be validated against actual controller reports before implementing the bridge.
-- Controlify should remain responsible for ordinary controller buttons and sticks. Our mod should own only the specialized trackpad UI, avoiding duplicate gamepad events.
+1. Use Minecraft Java 26.3 with Fabric Loader 0.19.3 or newer and Java 25.
+2. Install Fabric API for 26.3, Controlify 3.5.3+mc26.3, and Controlify's YetAnotherConfigLib dependency.
+3. Put the add-on JAR in the client mods folder. In Controlify, install SDL natives when prompted and select the physical Steam Controller. The controller must expose both pads through SDL. A virtual Xbox controller will typically hide them.
 
-## Milestones
+To build from source with Java 25 and Gradle 9.6.1, run `gradle build`. The build writes the JAR to `build/libs/`.
 
-1. Fabric mod scaffold and GitHub Actions build.
-2. Verify compatibility with the installed Controlify version and Minecraft 26.3.
-3. Read-only HID diagnostic probe (device discovery and decoded touch positions) based on the SteamlessController report layout.
-4. Local bridge between HID input and Minecraft client, with connection status.
-5. Radial menus, inventory scroll, cursor mapping and context switch.
-6. Settings, controller testing, release JAR.
+## Hardware validation
 
-## Current status
+This implementation needs an in-game test with the physical controller. Start with a wired connection and check that each pad opens its own wheel, returning to center cancels, and changing screens or unplugging during a gesture does not select an action. In an inventory or scrollable screen, check cursor direction, vertical scrolling, and selection using Controlify's click bind. Wireless and Bluetooth behavior also need hardware verification.
 
-The Java initializer is only a **context detection scaffold**. There is no native HID reader, no controller gestures, no radial UI and no usable gameplay integration yet. Do not mistake a successful build for finished functionality.
-
-## Sources and licenses
-
-- [SteamlessController](https://github.com/ddeverill/SteamlessController) — MIT licensed, useful for HID parsing.
-- [sc2-research](https://github.com/CouchTurtle/sc2-research) — controller research and HID report analysis.
-- [Controlify](https://github.com/isXander/Controlify) — separate controller mod; no bundled source.
-
-No upstream source has been copied into this repository. MIT license applies to this project's original code; preserve attribution if upstream source is later reused.
-
-## Controlify-first integration decision (2026-11-22)
-
-This is a **Controlify extension**, not a parallel controller framework. Controlify already uses SDL3, has vendor-specific touchpad support on some controllers, supports radial menus, and implements GUI cursor navigation. The first implementation task is to identify how its SDL3 driver exposes the newer Steam Controller's trackpads, then register the missing inputs through Controlify's controller input pipeline. Do not reimplement Controlify's radial UI, inventory cursor, button mapping or configuration screens unless a specific gap is demonstrated.
-
-Desired defaults: gameplay left/right radial menus; GUI left scroll and right mouse. Provide minimal per-pad mode and sensitivity options, using Controlify configuration where possible. SteamlessController HID parsing is a fallback/reference only, not the primary architecture.
-
-**Current Java initializer is a temporary diagnostic scaffold**, not a Controlify integration. The repository currently has no Controlify dependency or verified controller driver implementation.
+The add-on reads Controlify's existing touch state. Device access runs through Controlify's bundled [SDL Steam Controller driver](https://github.com/libsdl-org/SDL/blob/release-3.4.12/src/joystick/hidapi/SDL_hidapi_steam_triton.c).
