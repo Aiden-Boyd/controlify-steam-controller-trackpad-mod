@@ -5,6 +5,7 @@ import dev.isxander.controlify.InputMode;
 import dev.isxander.controlify.api.event.ControlifyEvents;
 import dev.isxander.controlify.controller.ControllerEntity;
 import dev.isxander.controlify.controller.touchpad.Touchpads.Touchpad;
+import dev.isxander.controlify.utils.MinecraftUtil;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
@@ -33,7 +34,7 @@ public final class SteamTrackpadsClient implements ClientModInitializer {
 
         ControlifyEvents.ACTIVE_CONTROLLER_TICKED.register(event -> {
             Minecraft client = Minecraft.getInstance();
-            if (!client.isWindowActive() || client.player == null || client.screen != null) {
+            if (!client.isWindowActive() || client.player == null || MinecraftUtil.getScreen() != null) {
                 return;
             }
 
@@ -43,14 +44,14 @@ public final class SteamTrackpadsClient implements ClientModInitializer {
                 return;
             }
             if (startedTouch(pads[LEFT])) {
-                openRadial(client, controller, LEFT);
+                openRadial(controller, LEFT);
             } else if (startedTouch(pads[RIGHT])) {
-                openRadial(client, controller, RIGHT);
+                openRadial(controller, RIGHT);
             }
         });
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.screen instanceof TrackpadRadialScreen radial
+            if (MinecraftUtil.getScreen() instanceof TrackpadRadialScreen radial
                     && (!client.isWindowActive() || client.player == null
                     || !Controlify.instance().currentInputMode().isController()
                     || Controlify.instance().getCurrentController().orElse(null) != radial.owner())) {
@@ -59,10 +60,10 @@ public final class SteamTrackpadsClient implements ClientModInitializer {
         });
     }
 
-    private static void openRadial(Minecraft client, ControllerEntity controller, int padIndex) {
+    private static void openRadial(ControllerEntity controller, int padIndex) {
         var radial = new TrackpadRadialScreen(controller, padIndex);
-        client.setScreen(radial);
-        if (client.screen == radial) {
+        MinecraftUtil.setScreen(radial);
+        if (MinecraftUtil.getScreen() == radial) {
             radial.onControllerInput(controller);
         }
     }

@@ -2,6 +2,7 @@ package dev.steampads.mixin;
 
 import dev.isxander.controlify.controller.ControllerEntity;
 import dev.isxander.controlify.controller.touchpad.Touchpads.Touchpad;
+import dev.isxander.controlify.utils.MinecraftUtil;
 import dev.isxander.controlify.screenop.ScreenProcessorProvider;
 import dev.isxander.controlify.virtualmouse.VirtualMouseHandler;
 import dev.steampads.SteamTrackpadsClient;
@@ -25,13 +26,14 @@ abstract class VirtualMouseHandlerMixin {
     @Inject(method = "handleControllerInput", at = @At("HEAD"))
     private void steamtrackpads$enableCursorOnTouch(ControllerEntity controller, CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
-        if (virtualMouseEnabled || client.screen == null || !client.isWindowActive()) {
+        var screen = MinecraftUtil.getScreen();
+        if (virtualMouseEnabled || screen == null || !client.isWindowActive()) {
             return;
         }
         Touchpad[] pads = SteamTrackpadsClient.trackpads(controller);
         if (pads != null && (SteamTrackpadsClient.startedTouch(pads[SteamTrackpadsClient.LEFT])
                 || SteamTrackpadsClient.startedTouch(pads[SteamTrackpadsClient.RIGHT]))
-                && ScreenProcessorProvider.provide(client.screen).virtualMouseBehaviour().hasCursor()) {
+                && ScreenProcessorProvider.provide(screen).virtualMouseBehaviour().hasCursor()) {
             enableVirtualMouse();
         }
     }
